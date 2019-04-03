@@ -1,0 +1,54 @@
+<div>
+  <h1 *ngIf="patentData" style="text-align: center">View Patent Records</h1>
+  <h3 *ngIf="!patentData" style="text-align: center; color: blue">Loading Patent Records Charts...</h3>
+  <table *ngIf="patentData" style="padding: 10px; text-align: center; margin-left: 200px">
+    <tr>
+      <td style="padding: 20px">
+        <p-chart type="doughnut" [data]="pieChartData" width="600px" height="500px" (onDataSelect)="selectData($event)"></p-chart>
+      </td>
+      <td style="padding: 20px">
+        <app-reporting (sendSearchEvent)="receiveSearch($event)"></app-reporting>
+      </td>
+    </tr>
+  </table>
+<br>
+  <br>
+  <p-progressSpinner class="spinnerCustom" *ngIf="!patentData"></p-progressSpinner>
+  <p-table #dt [ngStyle]="{'padding-left':'50px', 'margin-right': '50px'}" [columns]="selectedColumns" [value]="patentData"
+    [paginator]="true" [rows]="10" sortMode="multiple" selectionMode="multiple" [scrollable]="true" [style]="{width:'100%'}"
+    scrollHeight="400px" [resizableColumns]="true" columnResizeMode="expand" [responsive]="true" [loading]="loading" [rowsPerPageOptions]="[10,20,50]">
+    <ng-template pTemplate="caption">
+      <div style="text-align:left">
+        <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header" selectedItemsLabel="{0} columns selected"
+          [style]="{minWidth: '200px'}" defaultLabel="Choose Columns"></p-multiSelect>
+        <div style="float: right">
+          <p-button label="View All Patent Record" (onClick)="getAllDataClick($event)"></p-button>
+          </div>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <th *ngFor="let col of columns" [pSortableColumn]="col.field" style="width:250px" pResizableColumn>
+          {{col.header}}
+          <p-sortIcon [field]="col.field"></p-sortIcon>
+        </th>
+      </tr>
+      <tr>
+        <th *ngFor="let col of columns" [ngSwitch]="col.filterType">
+          <input *ngSwitchCase="'text'" pInputText type="text" (input)="dt.filter($event.target.value, col.field, col.filterMatchMode)">
+          <p-calendar *ngSwitchCase="'date'" selectionMode="range" appendTo="body" [showIcon]="true" [monthNavigator]="true" [yearNavigator]="true"
+            yearRange="1990:2020" [readonlyInput]="true"></p-calendar>
+          <p-multiSelect *ngSwitchCase="'multiselect'" [style]="{'width':'100%'}" [options]="filterOptions" appendTo="body" [(ngModel)]="selectedDocumentType" defaultLabel="All Document Types"
+            (onChange)="dt.filter($event.value, col.field, 'in')"></p-multiSelect>
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-patent let-columns="columns" let-rowIndex="rowIndex">
+      <tr [pSelectableRow]="patent" [pSelectableRowIndex]="rowIndex">
+        <td *ngFor="let col of columns" style="width:250px" class="ui-resizable-column">
+          {{patent[col.field]}}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
